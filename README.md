@@ -61,4 +61,4 @@ Corpo da Requisição:
 
 - Excluir um usuário:
 
-* DELETE /users/:id *
+*DELETE /users/:id*
