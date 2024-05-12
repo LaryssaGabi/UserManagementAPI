@@ -1,66 +1,64 @@
-const port = 3000
 const express = require('express');
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid'); // Importando o método v4 de uuid como uuidv4
+const cors = require('cors');
+
+const port = 3000;
 const server = express();
 server.use(express.json());
+server.use(cors());
 
+const users = []; // Array para armazenar os usuários
 
-const users = []
-
+// Middleware para verificar se o ID do usuário existe
 const checkUserId = (request, response, next) => {
-    const { id } = request.params
+    const { id } = request.params;
 
-    const index = users.findIndex(user => user.id === id) // aqui ele vai procurar no meu array de usuario onde o id for igual (findIndex = procura para nos)
+    const index = users.findIndex(user => user.id === id); // Procurando pelo ID do usuário no array de usuários
     if (index < 0) {
-        return response.status(404).json({ menssage: "User not foud" })
+        return response.status(404).json({ message: "User not found" }); // Retornando um erro se o usuário não for encontrado
     }
-    request.userIndex = index;
-    request.userId = id
+    request.userIndex = index; // Armazenando o índice do usuário encontrado na requisição
+    request.userId = id; // Armazenando o ID do usuário encontrado na requisição
 
-    next()
-}
+    next(); // Chamando o próximo middleware
+};
 
-
-server.get('/users', (request, response) => {  // uma rota simples que irá mostar todos os nosos usuarios 
-    return response.json(users)
-})
-
-
-server.post('/users', (request, response) => {  // uma rota simples que irá criar os usuarios 
-    const { name, age, telefone } = request.body
-    const user = { id: uuid.v4(), name, age, telefone } // o id irá gerar um id unico para cada um
-
-    users.push(user)// pegamos o nosso array . push para mostarr os nossos array
-
-    return response.status(201).json(user) // quando o nosso back cria uma informaçõe e ela tem sucesso, o status é 201, sendo assim podeos modificar  response.json(user) =>  response.status(201).json(user)
-})
-
-
-server.put('/users/:id', checkUserId, (request, response) => {  // uma rota simples que irá atualizar as informações - senod asim utilizamos o route params
-
-    const { name, age, telefone } = request.body
-    const index = request.userIndex
-    const id = request.userId
-
-    const updatedUser = { id, name, age, telefone }
-
-    users[index] = updatedUser; // irá atualizar as informções
-
-    return response.json(updatedUser) // sendo assim só irá aparcer o cadstro atualizado
-})
-
-
-server.delete('/users/:id', checkUserId, (request, response) => {  // uma rota simples que irá deletar o que gostariamos 
-    const index = request.userIndex
-
-    users.splice(index, 1) // vai deleter do indice que eu quiser até a quantidade de indices qeu eu quero 
-    return response.status(204).json()
-})
-
-
-server.listen(3000, () => {
-    console.log(`Server is running on port ${port}`);
+// Rota para obter todos os usuários
+server.get('/users', (request, response) => {
+    return response.json(users); // Retornando todos os usuários em formato JSON
 });
 
+// Rota para adicionar um novo usuário
+server.post('/users', (request, response) => {
+    const { name, age, telefone } = request.body;
+    const user = { id: uuidv4(), name, age, telefone }; // Criando um novo usuário com um ID único gerado
 
+    users.push(user); // Adicionando o novo usuário ao array de usuários
 
+    return response.status(201).json(user); // Retornando o novo usuário com o status de criação (201)
+});
+
+// Rota para atualizar um usuário existente
+server.put('/users/:id', checkUserId, (request, response) => {
+    const { name, age, telefone } = request.body;
+    const index = request.userIndex; // Obtendo o índice do usuário a ser atualizado
+    const id = request.userId; // Obtendo o ID do usuário a ser atualizado
+
+    const updatedUser = { id, name, age, telefone }; // Criando um objeto com as informações atualizadas do usuário
+
+    users[index] = updatedUser; // Atualizando as informações do usuário no array de usuários
+
+    return response.json(updatedUser); // Retornando as informações atualizadas do usuário
+});
+
+// Rota para deletar um usuário existente
+server.delete('/users/:id', checkUserId, (request, response) => {
+    const index = request.userIndex; // Obtendo o índice do usuário a ser deletado
+
+    users.splice(index, 1); // Removendo o usuário do array de usuários
+    return response.status(204).json(); 
+});
+
+server.listen(port, () => {
+    console.log(`Server is running on port ${port}`); 
+});
